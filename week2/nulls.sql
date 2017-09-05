@@ -1,4 +1,4 @@
-\pset null 'null'
+\pset null NULL
 
 DROP TABLE IF EXISTS Pairs;
 CREATE TABLE Pairs(x integer, y integer);
