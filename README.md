@@ -10,3 +10,4 @@
 - Week 5: https://goo.gl/forms/FYxN2i5aaUlX6uP13
 - Week 6: https://goo.gl/forms/4cMyxgDuxeLLZUIr1
 - Week 7: https://goo.gl/forms/OFhp2xFTHFH8EO4q1
+- Week 8: https://goo.gl/forms/5z0FHyePThVgBvNj1
