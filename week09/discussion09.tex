@@ -1,10 +1,13 @@
 \documentclass{article}
 
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.75in]{geometry}
 \usepackage{etoolbox}
 \usepackage{mathtools}
+\usepackage{multicol}
 \usepackage{multirow}
+\usepackage{tikz}
 \usepackage{xcolor}
+\usetikzlibrary{shapes}
 
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
@@ -16,8 +19,9 @@
 
 \begin{document}
 \begin{center}
-  \Large
-  CS 186 Discussion 9: Query Optimization and Database Design
+  \huge
+  CS 186 Discussion 9: \\
+  Query Optimization and Database Design
 \end{center}
 
 \section{Selectivity Estimation}
@@ -118,5 +122,85 @@ and $T$ because we favor joins over cross products.
 \end{center}
 
 \section{ER Diagrams}
+\newcommand{\basedrawing}{
+  \node[draw] (R) at (0, 0) {$R$};
+  \node[circle, draw] (Ra) at (-0.5, 1) {\underline{$a$}};
+  \node[circle, draw] (Rb) at (0.5, 1) {$b$};
 
+  \node[diamond, draw] (L) at (1.5, 0) {$L$};
+
+  \node[draw] (S) at (3, 0) {$S$};
+  \node[circle, draw] (Sa) at (2.5, 1) {\underline{$b$}};
+  \node[circle, draw] (Sb) at (3.5, 1) {$c$};
+}
+
+Consider the following ER diagrams. We can translate each into an equivalent
+triplet of \texttt{CREATE TABLE} statements: one for $R$, one for $S$, and one
+for $T$. The statements for $R$ and $S$ remain constant:
+\begin{verbatim}
+  CREATE TABLE R (a INTEGER, b INTEGER, PRIMARY KEY (a))
+  CREATE TABLE S (b INTEGER, c INTEGER, PRIMARY KEY (b))
+\end{verbatim}
+Provide the \texttt{CREATE TABLE} statements for $L$.
+\begin{multicols}{2}
+\begin{enumerate}
+  \item \hfill
+
+    \begin{tikzpicture}
+      \basedrawing
+      \draw[ultra thick] (R) to (L);
+      \draw[ultra thick] (S) to (L);
+    \end{tikzpicture}
+{
+\iftoggle{showsolutions}{\color{red}}{\color{white}}
+\begin{verbatim}
+  CREATE TABLE L(
+    a INTEGER, b INTEGER,
+    FOREIGN KEY (a) REFERENCES R,
+    FOREIGN KEY (b) REFERENCES S
+  )
+\end{verbatim}
+}
+
+  \item \hfill
+
+    \begin{tikzpicture}
+      \basedrawing
+      \draw[ultra thick, ->] (R) to (L);
+      \draw[ultra thick] (S) to (L);
+    \end{tikzpicture}
+{
+\iftoggle{showsolutions}{\color{red}}{\color{white}}
+\begin{verbatim}
+  CREATE TABLE L(
+    a INTEGER, b INTEGER,
+    PRIMARY KEY (a)
+    FOREIGN KEY (a) REFERENCES R,
+    FOREIGN KEY (b) REFERENCES S
+  )
+\end{verbatim}
+}
+
+  \item \hfill
+
+    \begin{tikzpicture}
+      \basedrawing
+      \draw[ultra thick] (R) to (L);
+      \draw[ultra thick, ->] (S) to (L);
+    \end{tikzpicture}
+{
+\iftoggle{showsolutions}{\color{red}}{\color{white}}
+\begin{verbatim}
+  CREATE TABLE L(
+    a INTEGER, b INTEGER,
+    PRIMARY KEY (b),
+    FOREIGN KEY (a) REFERENCES R,
+    FOREIGN KEY (b) REFERENCES S
+  )
+\end{verbatim}
+}
+
+\vspace{4cm}\phantom{a}
+\end{enumerate}
+\end{multicols}
 \end{document}
