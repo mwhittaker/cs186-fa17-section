@@ -21,6 +21,38 @@
 \end{center}
 
 \section{Selectivity Estimation}
+Consider a relation $R(a, b, c)$ with 1000 tuples. We have an index on $a$ with
+50 unique values in the range $[1, 50]$ and an index on $b$ with 100 unique
+values in the range $[1, 100]$. We do not have an index on $c$. Use selectivity
+estimation to estimate the number of tuples produced by the following queries.
+
+\begin{enumerate}
+  \item \texttt{SELECT * FROM R}
+    \sol{1000}
+  \item \texttt{SELECT * FROM R WHERE a = 42}
+    \sol{$\frac{1}{50} \cdot 1000 = 20$}
+  \item \texttt{SELECT * FROM R WHERE b = 42}
+    \sol{$\frac{1}{100} \cdot 1000 = 10$}
+  \item \texttt{SELECT * FROM R WHERE c = 42}
+    \sol{$\frac{1}{10} \cdot 1000 = 100$}
+  \item \texttt{SELECT * FROM R WHERE a <= 25}
+    \sol{$\frac{1}{2} \cdot 1000 = 500$}
+  \item \texttt{SELECT * FROM R WHERE b <= 25}
+    \sol{$\frac{1}{4} \cdot 1000 = 250$}
+  \item \texttt{SELECT * FROM R WHERE c <= 25}
+    \sol{$\frac{1}{10} \cdot 1000 = 100$}
+  \item \texttt{SELECT * FROM R WHERE a <= 25 AND b <= 25}
+    \sol{$\frac{1}{2}\cdot\frac{1}{4}\cdot 1000 = 125$}
+  \item \texttt{SELECT * FROM R WHERE a <= 25 AND c <= 25}
+    \sol{$\frac{1}{2}\cdot\frac{1}{10}\cdot 1000 = 50$}
+  \item \texttt{SELECT * FROM R WHERE a <= 25 OR b <= 25}
+    \sol{$(\frac{1}{2} + \frac{1}{4} - \frac{1}{2}\cdot\frac{1}{4})\cdot 1000 = 625$}
+  \item \texttt{SELECT * FROM R WHERE a = b}
+    \sol{$\frac{1}{100} \cdot 1000 = 10$}
+  \item \texttt{SELECT * FROM R WHERE a = c}
+    \sol{$\frac{1}{50} \cdot 1000 = 20$}
+\end{enumerate}
+
 \section{Query Optimization}
 Consider the relations $R(a, b)$, $S(b, c)$, and $T(c, d)$ with clustered
 indexes on $R.a$, $S.b$, and $T.c$ and with unclustered indexes on $S.c$ and
