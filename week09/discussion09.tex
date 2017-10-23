@@ -1,0 +1,90 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{etoolbox}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{xcolor}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\newtoggle{showsolutions}
+\toggletrue{showsolutions}
+% \togglefalse{showsolutions}
+\newcommand{\sol}[1]{\iftoggle{showsolutions}{\textcolor{red}{#1}}{\phantom{#1}}}
+
+\begin{document}
+\begin{center}
+  \Large
+  CS 186 Discussion 9: Query Optimization and Database Design
+\end{center}
+
+\section{Selectivity Estimation}
+\section{Query Optimization}
+Consider the relations $R(a, b)$, $S(b, c)$, and $T(c, d)$ with clustered
+indexes on $R.a$, $S.b$, and $T.c$ and with unclustered indexes on $S.c$ and
+$T.d$. All indexes have index keys in the range $[1, 100]$. We want to optimize
+the following query:
+\begin{verbatim}
+  SELECT *
+   FROM  R, S, T
+  WHERE  R.b = S.b AND S.c = T.c
+    AND  R.a <= 50
+    AND  (T.c <= 50 OR T.d <= 20)
+\end{verbatim}
+
+In the first pass of the Sellinger query optimization algorithm, we compute the
+minimum cost access method for every (relation, interesting order) pair.
+Complete the following table which computes this. Let $[R]$, $[S]$, and $[T]$
+be the number of \emph{pages} in $R$, $S$, and $T$. Similarly, let $|R|$,
+$|S|$, and $|T|$ be the number of \emph{tuples} in $R$, $S$, and $T$.
+\begin{center}
+  \begin{tabular}{|l|l|l|l|l|l|}
+    \hline
+                         & Access            & Interesting & I/O                & Output                          & \\
+    Relation             & Method            & Order       & Cost               & Size                            & Retained  \\\hline\hline
+    \multirow{2}{*}{$R$} & Full table scan   & None        & $[R]$              & \multirow{2}*{$0.5[R]$}         & No \\\cline{2-4} \cline{6-6}
+                         & Index scan on $a$ & $(a)$       & $2 + 0.5*[R]$      &                                 & Yes \\\hline
+    \multirow{3}{*}{$S$} & Full table scan   & \sol{None}  & \sol{$[S]$}        & \multirow{3}{*}{\sol{$[S]$}}    & Yes \\\cline{2-4} \cline{6-6}
+                         & Index scan on $b$ & \sol{$(b)$} & \sol{$2 + [S]$}    &                                 & Yes \\\cline{2-4} \cline{6-6}
+                         & Index scan on $c$ & \sol{$(c)$} & \sol{$2 + |S|$}    &                                 & Yes \\\hline
+    \multirow{3}{*}{$T$} & Full table scan   & \sol{None}  & \sol{$[T]$}        & \multirow{3}{*}{\sol{$0.6[T]$}} & No \\\cline{2-4} \cline{6-6}
+                         & Index scan on $c$ & \sol{$(c)$} & \sol{$2 + 0.5[T]$} &                                 & Yes \\\cline{2-4} \cline{6-6}
+                         & Index scan on $d$ & \sol{$(d)$} & \sol{$2 + 0.2|T|$} &                                 & Yes \\\hline
+  \end{tabular}
+\end{center}
+
+\newcommand{\bnlj}[2]{#1 + \ceil*{\frac{#1}{B-2}}#2}
+\newcommand{\sortcost}[1]{2#1\ceil*{1 + \log_{B-1}(\frac{#1}{B})}}
+\newcommand{\smj}[2]{\text{SC}(#1) + \text{SC}(#2) + #1#2}
+
+In the second pass of the Sellinger query optimization algorithm, we consider
+each (relation, interesting order) pair in turn. For each, we compute the cost
+of joining every other relation into it. In the end, we retain the minimum cost
+join for each (relations, interesting order) pair. Complete the following table
+which computes \emph{part} of the second pass. Let $B$ be the number of buffer
+pages, and let $SC(x) = \sortcost{x}$. Note that we do not consider joining $R$
+and $T$ because we favor joins over cross products.
+\begin{center}
+  \begin{tabular}{|l|l|l|l|l|l|l|}
+    \hline
+                         & Left                   &                      &      &                &                                & \\
+    Left                 & Interesting            & Right                &      & Interesting    & I/O                            & Output                                   \\
+    Relations            & Order                  & Relation             & Join & Order          & Cost                           & Size                                     \\\hline
+    \multirow{2}{*}{$R$} & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & PNLJ & None           & $\bnlj{0.5[R]}{[S]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & $(b)$          & $\smj{0.5[R]}{[S]}$            & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & PNLJ & None           & $\bnlj{[S]}{0.5[R]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$            & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}     & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + 0.5[R][S]$} & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
+  \end{tabular}
+\end{center}
+
+\section{ER Diagrams}
+
+\end{document}
