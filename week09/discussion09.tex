@@ -11,6 +11,7 @@
 
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\parens}{(}{)}
 
 \newtoggle{showsolutions}
 \toggletrue{showsolutions}
@@ -92,8 +93,8 @@ $|S|$, and $|T|$ be the number of \emph{tuples} in $R$, $S$, and $T$.
 \end{center}
 
 \newcommand{\bnlj}[2]{#1 + \ceil*{\frac{#1}{B-2}}#2}
-\newcommand{\sortcost}[1]{2#1\ceil*{1 + \log_{B-1}(\frac{#1}{B})}}
-\newcommand{\smj}[2]{\text{SC}(#1) + \text{SC}(#2) + #1#2}
+\newcommand{\sortcost}[1]{2#1\ceil*{1 + \log_{B-1}\parens*{\ceil*{\frac{#1}{B}}}}}
+\newcommand{\smj}[2]{\text{SC}(#1) + \text{SC}(#2) + #1 + #2}
 
 In the second pass of the Sellinger query optimization algorithm, we consider
 each (relation, interesting order) pair in turn. For each, we compute the cost
@@ -108,15 +109,15 @@ and $T$ because we favor joins over cross products.
                          & Left                   &                      &      &                &                                & \\
     Left                 & Interesting            & Right                &      & Interesting    & I/O                            & Output                                   \\
     Relations            & Order                  & Relation             & Join & Order          & Cost                           & Size                                     \\\hline
-    \multirow{2}{*}{$R$} & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & PNLJ & None           & $\bnlj{0.5[R]}{[S]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+    \multirow{2}{*}{$R$} & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & BNLJ & None           & $\bnlj{0.5[R]}{[S]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
                          &                        &                      & SMJ  & $(b)$          & $\smj{0.5[R]}{[S]}$            & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & PNLJ & None           & $\bnlj{[S]}{0.5[R]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & BNLJ & None           & $\bnlj{[S]}{0.5[R]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
                          &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$            & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
                          &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}     & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}     & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
                          &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + 0.5[R][S]$} & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & PNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
                          &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
   \end{tabular}
 \end{center}
