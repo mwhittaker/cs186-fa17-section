@@ -101,24 +101,26 @@ each (relation, interesting order) pair in turn. For each, we compute the cost
 of joining every other relation into it. In the end, we retain the minimum cost
 join for each (relations, interesting order) pair. Complete the following table
 which computes \emph{part} of the second pass. Let $B$ be the number of buffer
-pages, and let $SC(x) = \sortcost{x}$. Note that we do not consider joining $R$
-and $T$ because we favor joins over cross products.
+pages, let $SC(x) = \sortcost{x}$, assume that a B+ tree index can be traversed
+in 2 IOs, and assume the merge phase of a sort merge join on two relations of
+size $n$ and $m$ can be done in $n + m$ IOs. Note that we do not consider
+joining $R$ and $T$ because we favor joins over cross products.
 \begin{center}
   \begin{tabular}{|l|l|l|l|l|l|l|}
     \hline
-                         & Left                   &                      &      &                &                                & \\
-    Left                 & Interesting            & Right                &      & Interesting    & I/O                            & Output                                   \\
-    Relations            & Order                  & Relation             & Join & Order          & Cost                           & Size                                     \\\hline
-    \multirow{2}{*}{$R$} & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & BNLJ & None           & $\bnlj{0.5[R]}{[S]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                         &                        &                      & SMJ  & $(b)$          & $\smj{0.5[R]}{[S]}$            & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & BNLJ & None           & $\bnlj{[S]}{0.5[R]}$           & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                         &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$            & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
-                         &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}     & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                         &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + 0.5[R][S]$} & \\\hline
-    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}     & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
-                         &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\smj{[S]}{0.6[T]}$}      & \\\hline
+                          & Left                   &                      &      &                &                                       & \\
+    Left                  & Interesting            & Right                &      & Interesting    & I/O                                   & Output                                   \\
+    Relations             & Order                  & Relation             & Join & Order          & Cost                                  & Size                                     \\\hline
+    \multirow{2}{*}{$R$}  & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & BNLJ & None           & $\bnlj{0.5[R]}{[S]}$                  & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                          &                        &                      & SMJ  & $(b, a)$       & $\text{SC}(0.5[R]) + 0.5[R] + [S]$    & \\\hline
+    \multirow{2}{*}{$S$}  & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & BNLJ & None           & $\bnlj{[S]}{0.5[R]}$                  & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                          &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$                   & \\\hline
+    \multirow{2}{*}{$S$}  & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}            & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+                          &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\text{SC}([S]) + [S] + 0.6[T]$} & \\\hline
+    \multirow{2}{*}{$S$}  & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}            & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                          &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + 0.5[R][S]$}        & \\\hline
+    \multirow{2}{*}{$S$}  & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}            & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
+                          &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\text{SC}([S]) + [S] +0.6[T]$}  & \\\hline
   \end{tabular}
 \end{center}
 
