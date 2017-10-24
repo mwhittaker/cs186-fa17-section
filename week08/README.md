@@ -1,4 +1,4 @@
-# Week 7: Joins and Parallel Query Evaluation
+# Week 8: Joins and Parallel Query Evaluation
 
 ## Admin
 - HW3 was due today before lecture
