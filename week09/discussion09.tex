@@ -68,7 +68,7 @@ the following query:
    FROM  R, S, T
   WHERE  R.b = S.b AND S.c = T.c
     AND  R.a <= 50
-    AND  (T.c <= 50 OR T.d <= 20)
+    AND  (T.c <= 50 AND T.d <= 20)
 \end{verbatim}
 
 In the first pass of the Sellinger query optimization algorithm, we compute the
@@ -82,11 +82,11 @@ $|S|$, and $|T|$ be the number of \emph{tuples} in $R$, $S$, and $T$.
                          & Access            & Interesting & I/O                & Output                          & \\
     Relation             & Method            & Order       & Cost               & Size                            & Retained  \\\hline\hline
     \multirow{2}{*}{$R$} & Full table scan   & None        & $[R]$              & \multirow{2}*{$0.5[R]$}         & No \\\cline{2-4} \cline{6-6}
-                         & Index scan on $a$ & $(a)$       & $2 + 0.5*[R]$      &                                 & Yes \\\hline
+                         & Index scan on $a$ & $(a)$       & $2 + 0.5[R]$       &                                 & Yes \\\hline
     \multirow{3}{*}{$S$} & Full table scan   & \sol{None}  & \sol{$[S]$}        & \multirow{3}{*}{\sol{$[S]$}}    & Yes \\\cline{2-4} \cline{6-6}
                          & Index scan on $b$ & \sol{$(b)$} & \sol{$2 + [S]$}    &                                 & Yes \\\cline{2-4} \cline{6-6}
                          & Index scan on $c$ & \sol{$(c)$} & \sol{$2 + |S|$}    &                                 & Yes \\\hline
-    \multirow{3}{*}{$T$} & Full table scan   & \sol{None}  & \sol{$[T]$}        & \multirow{3}{*}{\sol{$0.6[T]$}} & No \\\cline{2-4} \cline{6-6}
+    \multirow{3}{*}{$T$} & Full table scan   & \sol{None}  & \sol{$[T]$}        & \multirow{3}{*}{\sol{$0.1[T]$}} & No \\\cline{2-4} \cline{6-6}
                          & Index scan on $c$ & \sol{$(c)$} & \sol{$2 + 0.5[T]$} &                                 & Yes \\\cline{2-4} \cline{6-6}
                          & Index scan on $d$ & \sol{$(d)$} & \sol{$2 + 0.2|T|$} &                                 & Yes \\\hline
   \end{tabular}
@@ -108,19 +108,19 @@ joining $R$ and $T$ because we favor joins over cross products.
 \begin{center}
   \begin{tabular}{|l|l|l|l|l|l|l|}
     \hline
-                          & Left                   &                      &      &                &                                       & \\
-    Left                  & Interesting            & Right                &      & Interesting    & I/O                                   & Output                                   \\
-    Relations             & Order                  & Relation             & Join & Order          & Cost                                  & Size                                     \\\hline
-    \multirow{2}{*}{$R$}  & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & BNLJ & None           & $\bnlj{0.5[R]}{[S]}$                  & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                          &                        &                      & SMJ  & $(b, a)$       & $\text{SC}(0.5[R]) + 0.5[R] + [S]$    & \\\hline
-    \multirow{2}{*}{$S$}  & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & BNLJ & None           & $\bnlj{[S]}{0.5[R]}$                  & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                          &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$                   & \\\hline
-    \multirow{2}{*}{$S$}  & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}            & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
-                          &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\text{SC}([S]) + [S] + 0.6[T]$} & \\\hline
-    \multirow{2}{*}{$S$}  & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.5[R]}$}            & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
-                          &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + 0.5[R][S]$}        & \\\hline
-    \multirow{2}{*}{$S$}  & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{0.6[T]}$}            & \multirow{2}{*}{$\frac{0.6[S][T]}{100}$} \\\cline{4-6}
-                          &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\text{SC}([S]) + [S] +0.6[T]$}  & \\\hline
+                         & Left                   &                      &      &                &                                       & \\
+    Left                 & Interesting            & Right                &      & Interesting    & I/O                                   & Output                                   \\
+    Relations            & Order                  & Relation             & Join & Order          & Cost                                  & Size                                     \\\hline
+    \multirow{2}{*}{$R$} & \multirow{2}{*}{$(a)$} & \multirow{2}{*}{$S$} & BNLJ & None           & $\bnlj{0.5[R]}{[S]}$                  & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & $(b, a)$       & $\text{SC}(0.5[R]) + 0.5[R] + [S]$    & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$R$} & BNLJ & None           & $\bnlj{[S]}{[R]}$                     & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & $(b)$          & $\smj{[S]}{0.5[R]}$                   & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{None}  & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{[T]}$}               & \multirow{2}{*}{$\frac{0.1[S][T]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(c)$}    & \sol{$\text{SC}([S]) + [S] + 0.1[T]$} & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$R$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{[R]}$}               & \multirow{2}{*}{$\frac{0.5[R][S]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(b)$}    & \sol{$SC(0.5[R]) + [S] + 0.5[R]$}     & \\\hline
+    \multirow{2}{*}{$S$} & \multirow{2}{*}{$(b)$} & \multirow{2}{*}{$T$} & BNLJ & \sol{None}     & \sol{$\bnlj{[S]}{[T]}$}               & \multirow{2}{*}{$\frac{0.1[S][T]}{100}$} \\\cline{4-6}
+                         &                        &                      & SMJ  & \sol{$(c, b)$} & \sol{$\text{SC}([S]) + [S] + 0.1[T]$} & \\\hline
   \end{tabular}
 \end{center}
 
