@@ -10,9 +10,7 @@ def num_trees(n):
     assert n >= 0, n
     if n <= 2:
         return n
-    low = 1
-    high = int(math.floor(n/2)) + 1
-    return 2 * sum(binom(n, k) * num_trees(k) * num_trees(n - k) for k in range(low, high))
+    return sum(binom(n, k) * num_trees(k) * num_trees(n - k) for k in range(1, n))
 
 if __name__ == "__main__":
     for i in range(1, 11):
