@@ -4,6 +4,7 @@
 - Who: **Michael Whittaker**
 
 ## Feedback
+- Week 1: No section
 - Week 2: https://goo.gl/forms/XfCurFpOZWdBnMuk2
 - Week 3: https://goo.gl/forms/Wma9iGO9nMmzmux73
 - Week 4: https://goo.gl/forms/Teowx7ntFQsaL6Bv1
@@ -13,3 +14,5 @@
 - Week 8: https://goo.gl/forms/5z0FHyePThVgBvNj1
 - Week 9: https://goo.gl/forms/xtNs6rhvpH33gmXl2
 - Week 10: https://goo.gl/forms/Zn4e9Ib8WjZcSBiB3
+- Week 11: No section (midterm)
+- Week 12: https://goo.gl/forms/YfE47Hx73CiClcCk2
