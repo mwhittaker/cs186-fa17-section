@@ -16,3 +16,5 @@
 - Week 10: https://goo.gl/forms/Zn4e9Ib8WjZcSBiB3
 - Week 11: No section (midterm)
 - Week 12: https://goo.gl/forms/YfE47Hx73CiClcCk2
+- Week 13: No section (thanksgiving)
+- Week 14: https://goo.gl/forms/BrTKEbZEgjYdUYfd2
